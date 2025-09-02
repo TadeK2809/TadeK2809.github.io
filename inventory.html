@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Inventario - Empanadas</title>
+  <meta name="description" content="App de inventario y producción para empanadas: stock, recetas, producción, ventas y estadísticas." />
+  <!-- Tailwind (permitido por el proyecto existente) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="inventory.css" />
+</head>
+<body class="bg-slate-50 text-slate-800">
+  <header class="bg-white shadow sticky top-0 z-50">
+    <nav class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between" aria-label="principal">
+      <div class="flex items-center gap-3">
+        <span class="text-xl font-bold">Sabores del Sur</span>
+        <span class="text-slate-400" aria-hidden="true">/</span>
+        <span class="font-semibold">Inventario & Producción</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="Sabores del sur HTML.html" class="text-sm text-amber-700 hover:underline">Volver al sitio</a>
+        <button id="btn-reset" class="text-sm px-3 py-2 rounded bg-slate-100 hover:bg-slate-200" title="Reiniciar datos (semillas)">
+          Reiniciar datos
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Columna izquierda: ingredientes -->
+    <section class="lg:col-span-1 space-y-6" aria-labelledby="ingredientes-title">
+      <header>
+        <h2 id="ingredientes-title" class="text-2xl font-bold">Ingredientes</h2>
+        <p class="text-sm text-slate-600">Agregá insumos y ajustá el stock en tiempo real.</p>
+      </header>
+
+      <!-- Form agregar/editar ingrediente -->
+      <article class="card">
+        <h3 class="card-title">Agregar ingrediente</h3>
+        <form id="form-ingrediente" class="space-y-3" novalidate>
+          <div>
+            <label for="ingr-nombre" class="label">Nombre *</label>
+            <input id="ingr-nombre" name="nombre" class="input" required placeholder="Harina, Carne, Queso..." />
+            <p class="hint">Debe ser único.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="ingr-unidad" class="label">Unidad *</label>
+              <select id="ingr-unidad" name="unidad" class="input" required>
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="u">u</option>
+              </select>
+            </div>
+            <div>
+              <label for="ingr-cantidad" class="label">Cantidad inicial</label>
+              <input id="ingr-cantidad" name="cantidad" class="input" type="number" min="0" step="any" value="0" />
+            </div>
+          </div>
+          <button class="btn-primary w-full" type="submit">Guardar ingrediente</button>
+        </form>
+      </article>
+
+      <!-- Ajuste de stock -->
+      <article class="card">
+        <h3 class="card-title">Ajustar stock</h3>
+        <form id="form-ajuste" class="space-y-3" novalidate>
+          <div>
+            <label for="aj-ingrediente" class="label">Ingrediente *</label>
+            <select id="aj-ingrediente" class="input" required></select>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label for="aj-tipo" class="label">Tipo *</label>
+              <select id="aj-tipo" class="input" required>
+                <option value="purchase">Compra (+)</option>
+                <option value="adjust">Ajuste (+/-)</option>
+                <option value="waste">Merma (-)</option>
+              </select>
+            </div>
+            <div>
+              <label for="aj-cantidad" class="label">Cantidad *</label>
+              <input id="aj-cantidad" class="input" type="number" min="0" step="any" required />
+            </div>
+            <div>
+              <label for="aj-signo" class="label">Signo</label>
+              <select id="aj-signo" class="input">
+                <option value="+">+</option>
+                <option value="-">-</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="aj-nota" class="label">Nota (opcional)</label>
+            <input id="aj-nota" class="input" placeholder="Factura #123, ajuste de inventario..." />
+          </div>
+          <button class="btn-secondary w-full" type="submit">Registrar ajuste</button>
+        </form>
+      </article>
+
+      <!-- Tabla de ingredientes -->
+      <article class="card">
+        <div class="flex items-center justify-between">
+          <h3 class="card-title">Stock actual</h3>
+          <button id="btn-exportar" class="text-sm text-amber-700 hover:underline">Exportar CSV</button>
+        </div>
+        <div class="overflow-auto">
+          <table class="tabla" id="tabla-ingredientes" aria-describedby="ingredientes-title">
+            <thead>
+              <tr>
+                <th>Ingrediente</th>
+                <th>Unidad</th>
+                <th class="text-right">Cantidad</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- Columna central: recetas y producción -->
+    <section class="lg:col-span-1 space-y-6" aria-labelledby="recetas-title">
+      <header>
+        <h2 id="recetas-title" class="text-2xl font-bold">Recetas (BOM)</h2>
+        <p class="text-sm text-slate-600">Definí recursos necesarios por unidad de empanada.</p>
+      </header>
+
+      <!-- Editor de receta -->
+      <article class="card">
+        <h3 class="card-title">Editar receta</h3>
+        <form id="form-receta" class="space-y-3" novalidate>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="rec-tipo" class="label">Tipo de empanada *</label>
+              <select id="rec-tipo" class="input" required></select>
+            </div>
+            <div class="flex items-end">
+              <button id="rec-limpiar" type="button" class="ml-auto text-sm px-3 py-2 rounded bg-slate-100 hover:bg-slate-200">
+                Limpiar
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="label">Ingredientes y cantidades por unidad</label>
+            <div id="rec-ingredientes" class="space-y-2"></div>
+            <div class="grid grid-cols-2 gap-3 mt-2">
+              <select id="rec-add-ing" class="input"></select>
+              <div class="flex gap-2">
+                <input id="rec-add-cant" class="input" type="number" placeholder="cantidad" step="any" min="0" />
+                <button id="rec-add-btn" type="button" class="btn-secondary">Agregar</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn-primary w-full" type="submit">Guardar receta</button>
+        </form>
+      </article>
+
+      <!-- Producción / Venta -->
+      <article class="card">
+        <h3 class="card-title">Producción y Ventas</h3>
+        <form id="form-produccion" class="space-y-3" novalidate>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label for="prod-tipo" class="label">Tipo *</label>
+              <select id="prod-tipo" class="input" required></select>
+            </div>
+            <div>
+              <label for="prod-cantidad" class="label">Cantidad *</label>
+              <input id="prod-cantidad" class="input" type="number" min="1" step="1" required />
+            </div>
+            <div>
+              <label for="prod-accion" class="label">Acción *</label>
+              <select id="prod-accion" class="input" required>
+                <option value="production">Producir (descuenta insumos)</option>
+                <option value="sale">Venta (no descuenta insumos)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-secondary w-full" type="submit">Registrar</button>
+          <p class="text-xs text-slate-500">Las ventas no descuentan insumos: se asume que ya fueron producidas.</p>
+        </form>
+      </article>
+
+      <!-- Actividad reciente -->
+      <article class="card">
+        <div class="flex items-center justify-between">
+          <h3 class="card-title">Actividad reciente</h3>
+          <button id="btn-borrar-actividad" class="text-sm text-red-700 hover:underline">Borrar historial</button>
+        </div>
+        <ol id="actividad" class="space-y-2 text-sm"></ol>
+      </article>
+    </section>
+
+    <!-- Columna derecha: dashboard -->
+    <section class="lg:col-span-1 space-y-6" aria-labelledby="dash-title">
+      <header>
+        <h2 id="dash-title" class="text-2xl font-bold">Dashboard</h2>
+        <p class="text-sm text-slate-600">Métricas clave y estadísticas por período.</p>
+      </header>
+
+      <article class="card">
+        <form id="form-filtro" class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="f-desde" class="label">Desde</label>
+            <input id="f-desde" type="date" class="input" />
+          </div>
+          <div>
+            <label for="f-hasta" class="label">Hasta</label>
+            <input id="f-hasta" type="date" class="input" />
+          </div>
+          <button class="btn-primary col-span-2" type="submit">Aplicar</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <dl class="grid grid-cols-2 gap-4">
+          <div class="kpi">
+            <dt>Unidades producidas</dt>
+            <dd id="kpi-producidas">0</dd>
+          </div>
+          <div class="kpi">
+            <dt>Unidades vendidas</dt>
+            <dd id="kpi-vendidas">0</dd>
+          </div>
+          <div class="kpi">
+            <dt>Tipos más vendidos</dt>
+            <dd id="kpi-top">—</dd>
+          </div>
+          <div class="kpi">
+            <dt>Insumos usados</dt>
+            <dd id="kpi-insumos">—</dd>
+          </div>
+        </dl>
+      </article>
+
+
+  <footer class="max-w-6xl mx-auto px-4 pb-10 text-center text-xs text-slate-500">
+    © 2025 Sabores del Sur — App de inventario (demo educativa).
+  </footer>
+
+  <dialog id="dlg" class="rounded-xl p-0 max-w-md w-full shadow-xl">
+    <form method="dialog" class="p-5 space-y-3">
+      <p id="dlg-msg" class="text-sm"></p>
+      <div class="text-right">
+        <button class="btn-primary" value="ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="inventory.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+
+/* Tipografía y utilidades sutiles (además de Tailwind) */
+:root { --ring: 0 0 0 3px rgba(245, 158, 11, .25); }
+.card { background:#fff; border:1px solid #e5e7eb; border-radius: 0.75rem; padding:1rem; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.card-title { font-weight: 700; margin-bottom: .75rem; }
+.input { width: 100%; border:1px solid #cbd5e1; border-radius:.5rem; padding:.5rem .75rem; background:#fff; }
+.input:focus { outline: none; box-shadow: var(--ring); border-color:#f59e0b; }
+.label { display:block; font-size:.875rem; color:#334155; margin-bottom:.25rem; }
+.hint { font-size:.75rem; color:#64748b; }
+.btn-primary { background:#f59e0b; color:#fff; font-weight:600; border-radius:.5rem; padding:.5rem .75rem; }
+.btn-primary:hover { background:#d97706; }
+.btn-secondary { background:#0ea5e9; color:#fff; font-weight:600; border-radius:.5rem; padding:.5rem .75rem; }
+.btn-secondary:hover { background:#0284c7; }
+.tabla { width:100%; border-collapse: collapse; }
+.tabla th, .tabla td { padding:.5rem .5rem; border-bottom:1px solid #e5e7eb; }
+.tabla th { text-align:left; font-size:.875rem; color:#475569; }
+.tabla td { font-size:.9rem; }
+.kpi { background:#fff; border:1px dashed #e5e7eb; border-radius:.75rem; padding:.75rem; text-align:center; }
+.kpi dt { font-size:.75rem; color:#64748b; }
+.kpi dd { font-size:1.25rem; font-weight:700; }
+.badge { font-size:.75rem; background:#fff7ed; border:1px solid #fed7aa; color:#b45309; border-radius:999px; padding:.125rem .5rem; }
+.row-actions button { font-size:.75rem; margin-left:.25rem; color:#ef4444; }
+dialog::backdrop { background: rgba(2,6,23,.5); }
